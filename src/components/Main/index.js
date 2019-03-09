@@ -33,19 +33,23 @@ export default compose(
     componentDidMount() {
       window.addEventListener('load', async () => {
         const metaMask = pathOr(false, ['web3', 'currentProvider', 'isMetaMask'], window) ? new Web3(window.web3.currentProvider) : null
-        const [accounts] = metaMask && await metaMask.eth.getAccounts()
+
+        if (metaMask) {
+          window.web3.currentProvider.publicConfigStore.on('update', ({ selectedAddress }) => {
+            this.setState({
+              defaultAccount: selectedAddress,
+              loggedIn: !!selectedAddress,
+            })
+          })
+        }
+
+        const accounts = metaMask && await metaMask.eth.getAccounts()
+        const defaultAccount = accounts && accounts[0]
         this.setState({
           isLoading: false,
           metaMask,
           loggedIn: !!accounts && !isEmpty(accounts),
-          defaultAccount: accounts
-        })
-      })
-
-      window.web3.currentProvider.publicConfigStore.on('update', ({ selectedAddress }) => {
-        this.setState({
-          defaultAccount: selectedAddress,
-          loggedIn: !!selectedAddress,
+          defaultAccount
         })
       })
     }
