@@ -2,7 +2,6 @@ import React from 'react'
 import CSSModules from 'react-css-modules'
 import { compose, pure, withStateHandlers, lifecycle, withHandlers } from 'recompose'
 import { reverse } from 'ramda'
-import delay from 'nanodelay'
 import styles from './styles.module.scss'
 
 const errors = {
