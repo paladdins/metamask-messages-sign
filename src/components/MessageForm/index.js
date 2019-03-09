@@ -13,20 +13,16 @@ const getMessageSign = (account, msg) => {
       value: msg
     }
   ]
-  try {
-    return new Promise(res => {
-      window.web3.currentProvider.sendAsync({
-        method: 'eth_signTypedData',
-        params: [msgParams, account],
-        from: account
-      }, (err, result) => {
-        if (result.result) res(result.result)
-        else res(null)
-      })
+  return new Promise(res => {
+    window.web3.currentProvider.sendAsync({
+      method: 'eth_signTypedData',
+      params: [msgParams, account],
+      from: account
+    }, (err, result) => {
+      if (result.result) res(result.result)
+      else res(null)
     })
-  } catch (error) {
-    console.log(error)
-  }
+  }).catch(err => console.log(err))
 }
 
 const MessageForm = ({ web3, messages, text, onSubmit, onTextInput, address, error }) => (
