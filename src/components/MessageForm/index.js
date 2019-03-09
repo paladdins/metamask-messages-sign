@@ -1,6 +1,6 @@
 import React from 'react'
 import CSSModules from 'react-css-modules'
-import { compose, pure, withStateHandlers, lifecycle, withHandlers } from 'recompose'
+import { compose, pure, withStateHandlers, withHandlers } from 'recompose'
 import { reverse } from 'ramda'
 import styles from './styles.module.scss'
 
@@ -29,7 +29,7 @@ const getMessageSign = (account, msg) => {
   })
 }
 
-const MessageForm = ({ web3, messages, text, onSubmit, onTextInput, address, error }) => (
+const MessageForm = ({ web3, messages, text, onSubmit, onTextInput, error, defaultAccount }) => (
   <div styleName="block">
     <div styleName="messagesContainer">
       {reverse(messages).map(({ message, sign }, i) => (
@@ -44,7 +44,7 @@ const MessageForm = ({ web3, messages, text, onSubmit, onTextInput, address, err
     </div>
     <form onSubmit={onSubmit} styleName="messageForm">
       <div styleName="currentWallet">
-        Your chosen wallet is {<code>{address}</code> || '...'}
+        Your chosen wallet is {<code>{defaultAccount}</code> || '...'}
       </div>
       <textarea onChange={onTextInput} value={text} />
       <div styleName="btnBlock">
@@ -62,7 +62,6 @@ export default compose(
       messages: [],
       text: '',
       error: null,
-      address: null
     },
     {
       onTextInput: () => ({ target: { value } }) => ({ text: value }),
@@ -87,12 +86,6 @@ export default compose(
       } else {
         setError(errors.signPlease)
       }
-    }
-  }),
-  lifecycle({
-    componentWillMount() {
-      const address = window.web3.currentProvider.selectedAddress
-      this.setState({ address })
     }
   }),
   CSSModules(styles)
