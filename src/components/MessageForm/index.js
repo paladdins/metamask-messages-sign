@@ -5,6 +5,11 @@ import { reverse } from 'ramda'
 import delay from 'nanodelay'
 import styles from './styles.module.scss'
 
+const errors = {
+  signPlease: 'You need to sign message before sending',
+  notEmpty: 'Your message could not be empty'
+}
+
 const getMessageSign = (account, msg) => {
   const msgParams = [
     {
@@ -22,7 +27,7 @@ const getMessageSign = (account, msg) => {
       if (result.result) res(result.result)
       else res(null)
     })
-  }).catch(err => console.log(err))
+  })
 }
 
 const MessageForm = ({ web3, messages, text, onSubmit, onTextInput, address, error }) => (
@@ -64,7 +69,7 @@ export default compose(
       onTextInput: () => ({ target: { value } }) => ({ text: value }),
       resetTextInput: () => () => ({ text: '' }),
       addMessage: ({ messages, text }) => sign => ({ messages: [...messages, { message: text, sign }] }),
-      signatureCancelled: () => () => ({ error: 'You need to sign message before sending' }),
+      setError: () => error => ({ error }),
       resetError: () => () => ({ error: null })
     }
   ),
@@ -72,17 +77,16 @@ export default compose(
     processSubmit: ({ web3, text }) => account => getMessageSign(account, text)
   }),
   withHandlers({
-    onSubmit: ({ processSubmit, addMessage, resetTextInput, web3, signatureCancelled, resetError }) => async e => {
+    onSubmit: ({ processSubmit, addMessage, resetTextInput, web3, setError, resetError, defaultAccount, text }) => async e => {
       e.preventDefault()
-      const [account] = await web3.eth.getAccounts()
-      const sign = await processSubmit(account)
+      if (!text) return setError(errors.notEmpty)
+      const sign = await processSubmit(defaultAccount).catch(err => console.error(err))
       if (sign !== null) {
         addMessage(sign)
         resetTextInput()
-      } else {
-        signatureCancelled()
-        await delay(4000)
         resetError()
+      } else {
+        setError(errors.signPlease)
       }
     }
   }),
